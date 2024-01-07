@@ -14,6 +14,10 @@ const databaseSettings = {
 const app = express();
 app.use(express.json());
 
+const port = process.env.PORT || 3030;
+app.listen(port, () => {
+    console.log(`Server is running at http://localhost:${port}`);
+});
 
 // Register routes
 
@@ -73,10 +77,6 @@ app.post('/login', async (req, res) => {
     }
 });
 
-const port = 3000;
-app.listen(port, () => {
-    console.log(`Server is running at http://localhost:${port}`);
-});
 
 app.post('/add-points', async (req, res) => {
     const { userId, gameId, points } = req.body;
@@ -231,3 +231,8 @@ async function getPointsByGameId(gameId) {
     connection.end();
     return rows;
 }
+
+
+
+
+
