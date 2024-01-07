@@ -99,7 +99,32 @@ app.post('/add-points', async (req, res) => {
     }
 });
 
+app.get('/get-points/:userId', async (req, res) => {
+    const userId = req.params.userId;
 
+    try {
+        // Get points for the specified user
+        const userPoints = await getPointsByUserId(userId);
+
+        return res.json({ userId, points: userPoints[0]["total"]});
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
+
+// FUNCTIONS ///////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
 
 async function connectDatabase() {
     return await mysql.createConnection(databaseSettings);
@@ -129,4 +154,11 @@ async function registerUser(name, email, password) {
     const connection = await connectDatabase();
     await connection.execute('INSERT INTO users (name, email, pwd) VALUES (?, ?, ?)', [name, email, password]);
     connection.end();
+}
+
+async function getPointsByUserId(userId) {
+    const connection = await connectDatabase();
+    const [rows] = await connection.execute('SELECT sum(points) as total FROM points WHERE user_id = ?', [userId]);
+    connection.end();
+    return rows;
 }
