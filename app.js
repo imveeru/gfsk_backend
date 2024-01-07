@@ -18,26 +18,6 @@ app.use(express.json());
 // Register routes
 
 // Route to register a new user
-// app.post('/register', async (req, res) => {
-//     const { name, email, password } = req.body;
-
-//     try {
-//         // Check if the email is already registered
-//         const existingUser = await getUserByEmail(email);
-
-//         if (existingUser) {
-//             return res.status(400).json({ error: 'Email already registered' });
-//         }
-
-//         // Create a new user
-//         await registerUser(name, email, password);
-
-//         return res.json({ message: 'User registered successfully' });
-//     } catch (error) {
-//         console.error(error);
-//         return res.status(500).json({ error: 'Internal Server Error' });
-//     }
-// });
 app.post('/register', async (req, res) => {
     const { name, email, password } = req.body;
 
@@ -53,7 +33,7 @@ app.post('/register', async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         // Create a new user with the hashed password
-        await registerUser(name, email, hashedPassword);
+        await registerUser(name, email, password);
 
         return res.json({ message: 'User registered successfully' });
     } catch (error) {
@@ -63,9 +43,34 @@ app.post('/register', async (req, res) => {
 });
 
 // Dummy route to simulate user login (replace with proper authentication)
-app.post('/login', (req, res) => {
-    const { token } = req.body; // Dummy token, replace with actual authentication logic
-    return res.json({ token });
+app.post('/login', async (req, res) => {
+    const { email, password } = req.body;
+
+    try {
+        // Get user by email
+        const user = await getUserByEmail(email);
+
+        if (!user) {
+            return res.status(401).json({ error: 'User does not exist!' });
+        }
+
+        // Verify the hashed password
+        const passwordMatch = await bcrypt.compare(password, user.pwd);
+
+        if (!passwordMatch) {
+            return res.status(401).json({ error: 'Invalid credentials' });
+        }
+
+        // Return user details on successful login
+        return res.json({
+            userId: user.id,
+            name: user.name,
+            email: user.email
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
 });
 
 const port = 3000;
