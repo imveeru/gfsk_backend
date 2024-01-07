@@ -1,5 +1,6 @@
 const express = require('express');
 const mysql = require('mysql2/promise');
+const bcrypt = require('bcrypt');
 
 // Replace the following placeholders with your actual RDS credentials
 const databaseSettings = {
@@ -17,6 +18,26 @@ app.use(express.json());
 // Register routes
 
 // Route to register a new user
+// app.post('/register', async (req, res) => {
+//     const { name, email, password } = req.body;
+
+//     try {
+//         // Check if the email is already registered
+//         const existingUser = await getUserByEmail(email);
+
+//         if (existingUser) {
+//             return res.status(400).json({ error: 'Email already registered' });
+//         }
+
+//         // Create a new user
+//         await registerUser(name, email, password);
+
+//         return res.json({ message: 'User registered successfully' });
+//     } catch (error) {
+//         console.error(error);
+//         return res.status(500).json({ error: 'Internal Server Error' });
+//     }
+// });
 app.post('/register', async (req, res) => {
     const { name, email, password } = req.body;
 
@@ -28,8 +49,11 @@ app.post('/register', async (req, res) => {
             return res.status(400).json({ error: 'Email already registered' });
         }
 
-        // Create a new user
-        await registerUser(name, email, password);
+        // Hash the password before storing it
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // Create a new user with the hashed password
+        await registerUser(name, email, hashedPassword);
 
         return res.json({ message: 'User registered successfully' });
     } catch (error) {
