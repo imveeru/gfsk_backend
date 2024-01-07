@@ -14,7 +14,7 @@ const databaseSettings = {
 
 const app = express();
 app.use(cors({
-    origin: 'https://imveeru.github.io/'
+    origin: '*'
 }));
 app.use(express.json());
 
