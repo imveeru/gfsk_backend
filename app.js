@@ -64,6 +64,6 @@ async function getUserByEmail(email) {
 
 async function registerUser(name, email, password) {
     const connection = await connectDatabase();
-    await connection.execute('INSERT INTO users (name, email, password) VALUES (?, ?, ?)', [name, email, password]);
+    await connection.execute('INSERT INTO users (name, email, pwd) VALUES (?, ?, ?)', [name, email, password]);
     connection.end();
 }
