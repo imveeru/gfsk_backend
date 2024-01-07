@@ -127,6 +127,41 @@ app.get('/get-points-game/:gameId', async (req, res) => {
     }
 });
 
+app.post('/add-inv', async (req, res) => {
+    const { userId, invId } = req.body;
+
+    try {
+        // Check if the user and game exist (you may want to add additional validations)
+        const user = await getUserById(userId);
+
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        // Insert points into the 'points' table
+        await addInv(userId, invId);
+
+        return res.json({ message: 'Added to Inventory successfully' });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+app.get('/get-inv/:userId', async (req, res) => {
+    const userId = req.params.userId;
+
+    try {
+        // Get points for the specified user
+        const userInv = await getInvByUserId(userId);
+
+        return res.json({ userId, inventory: userInv});
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
 ////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
@@ -147,6 +182,12 @@ async function connectDatabase() {
 async function addPoints(userId, gameId, points) {
     const connection = await connectDatabase();
     await connection.execute('INSERT INTO points (user_id, game_id, points) VALUES (?, ?, ?)', [userId, gameId, points]);
+    connection.end();
+}
+
+async function addInv(userId, invId) {
+    const connection = await connectDatabase();
+    await connection.execute('INSERT INTO inventory (user_id, inv_id) VALUES (?, ?)', [userId, invId]);
     connection.end();
 }
 
@@ -173,6 +214,13 @@ async function registerUser(name, email, password) {
 async function getPointsByUserId(userId) {
     const connection = await connectDatabase();
     const [rows] = await connection.execute('SELECT sum(points) as total FROM points WHERE user_id = ?', [userId]);
+    connection.end();
+    return rows;
+}
+
+async function getInvByUserId(userId) {
+    const connection = await connectDatabase();
+    const [rows] = await connection.execute('SELECT inv_id as inv FROM inventory WHERE user_id = ?', [userId]);
     connection.end();
     return rows;
 }
