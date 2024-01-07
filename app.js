@@ -78,10 +78,44 @@ app.listen(port, () => {
     console.log(`Server is running at http://localhost:${port}`);
 });
 
-// Functions to interact with the database
+app.post('/add-points', async (req, res) => {
+    const { userId, gameId, points } = req.body;
+
+    try {
+        // Check if the user and game exist (you may want to add additional validations)
+        const user = await getUserById(userId);
+
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        // Insert points into the 'points' table
+        await addPoints(userId, gameId, points);
+
+        return res.json({ message: 'Points added successfully' });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+
 
 async function connectDatabase() {
     return await mysql.createConnection(databaseSettings);
+}
+
+async function addPoints(userId, gameId, points) {
+    const connection = await connectDatabase();
+    await connection.execute('INSERT INTO points (user_id, game_id, points) VALUES (?, ?, ?)', [userId, gameId, points]);
+    connection.end();
+}
+
+async function getUserById(userId) {
+    const connection = await connectDatabase();
+    const [rows] = await connection.execute('SELECT * FROM users WHERE id = ?', [userId]);
+    connection.end();
+    return rows[0];
 }
 
 async function getUserByEmail(email) {
