@@ -113,6 +113,20 @@ app.get('/get-points/:userId', async (req, res) => {
     }
 });
 
+app.get('/get-points-game/:gameId', async (req, res) => {
+    const gameId = req.params.gameId;
+
+    try {
+        // Get points for the specified user
+        const gamePoints = await getPointsByGameId(gameId);
+
+        return res.json({ gameId, points: gamePoints[0]["total"]});
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
 ////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
@@ -159,6 +173,13 @@ async function registerUser(name, email, password) {
 async function getPointsByUserId(userId) {
     const connection = await connectDatabase();
     const [rows] = await connection.execute('SELECT sum(points) as total FROM points WHERE user_id = ?', [userId]);
+    connection.end();
+    return rows;
+}
+
+async function getPointsByGameId(gameId) {
+    const connection = await connectDatabase();
+    const [rows] = await connection.execute('SELECT sum(points) as total FROM points WHERE game_id = ?', [gameId]);
     connection.end();
     return rows;
 }
