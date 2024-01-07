@@ -1,6 +1,7 @@
 const express = require('express');
 const mysql = require('mysql2/promise');
 const bcrypt = require('bcrypt');
+const cors=require('cors');
 
 // Replace the following placeholders with your actual RDS credentials
 const databaseSettings = {
@@ -12,6 +13,9 @@ const databaseSettings = {
 };
 
 const app = express();
+app.use(cors({
+    origin: 'https://imveeru.github.io/'
+}));
 app.use(express.json());
 
 const port = process.env.PORT || 3030;
