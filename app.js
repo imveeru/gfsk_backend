@@ -166,6 +166,21 @@ app.get('/get-inv/:userId', async (req, res) => {
     }
 });
 
+app.get("/clue/:gameId/:modelId",async(req,res)=>{
+    const gameId=req.params.gameId;
+    const modelId=req.params.modelId;
+
+    try {
+        const clues = await getClue(gameId,modelId);
+
+        return res.json({ gameId,modelId, clue: clues});
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+    
+})
+
 ////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
@@ -232,6 +247,13 @@ async function getInvByUserId(userId) {
 async function getPointsByGameId(gameId) {
     const connection = await connectDatabase();
     const [rows] = await connection.execute('SELECT sum(points) as total FROM points WHERE game_id = ?', [gameId]);
+    connection.end();
+    return rows;
+}
+
+async function getClue(gameId,modelId) {
+    const connection = await connectDatabase();
+    const [rows] = await connection.execute('SELECT c1,c2,c3,c4,od FROM clues WHERE game_id=? AND model_id=?', [gameId,modelId]);
     connection.end();
     return rows;
 }
